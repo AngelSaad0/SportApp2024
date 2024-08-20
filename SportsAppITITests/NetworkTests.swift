@@ -7,81 +7,46 @@
 import XCTest
 @testable import SportsAppITI
 
-struct MockModel: Codable {
-    let success: Int
-}
+final class NetworkServiceTests: XCTestCase {
 
-final class NetworkTests: XCTestCase {
+    let networkManager = NetworkService.shared
 
-    var networkService: NetworkRequestable!
+    // Test successful data fetching and decoding
+    func testNetworkServiceSuccess() {
+        let expectation = self.expectation(description: "Test Network Service Success")
+        let endpoint = SportsAPI.getUpcomingEvents(leagueId: 123, fromDate: .now, toDate: .upcoming)
 
-    override func setUpWithError() throws {
-        networkService = NetworkService.shared
-    }
-
-    override func tearDownWithError() throws {
-        networkService = nil
-    }
-
-    func testFetchDataSuccess() throws {
-        let expectedObject = expectation(description: "API request succeeds")
-
-        networkService.fetchData(from: .getAllLeagues(sportsName: "football"), model: MockModel.self) { result, error in
-            XCTAssertNil(error, "Expected no error but got \(String(describing: error))")
-            XCTAssertNotNil(result, "Expected result to be non-nil")
-            XCTAssertEqual(result?.success, 1, "Expected success value to be 1")
-            expectedObject.fulfill()
-        }
-
-        waitForExpectations(timeout: 5)
-    }
-
-    func testFetchDataFailure() throws {
-        let expectedObject = expectation(description: "API request fails due to network error")
-
-        networkService.fetchData(from: .getAllLeagues(sportsName: "invalid_sport"), model: MockModel.self) { result, error in
-            XCTAssertNotNil(error, "Expected an error but got none")
-            XCTAssertNil(result, "Expected result to be nil")
-            expectedObject.fulfill()
-        }
-
-        waitForExpectations(timeout: 5)
-    }
-
-//    func testDecodingError() throws {
-//        let expectedObject = expectation(description: "API request returns decoding error")
-//
-//        networkService.fetchData(from: .getAllLeagues(sportsName: "football"), model: MockModel.self) { result, error in
-//            XCTAssertNil(result, "Expected result to be nil")
-//            expectedObject.fulfill()
-//        }
-//        waitForExpectations(timeout: 5)
-//    }
-
-    func testInvalidURL() throws {
-        let expectedObject = expectation(description: "API request with invalid URL")
-
-        networkService.fetchData(from: .getAllLeagues(sportsName: ""), model: MockModel.self) { result, error in
-            XCTAssertNotNil(error, "Expected an error for invalid URL but got none")
-            XCTAssertNil(result, "Expected result to be nil")
-            expectedObject.fulfill()
-        }
-
-        waitForExpectations(timeout: 5)
-    }
-
-    func testPerformanceExample() throws {
-        measure {
-            let expectedObject = expectation(description: "Performance test for fetchData")
-
-            networkService.fetchData(from: .getAllLeagues(sportsName: "football"), model: MockModel.self) { result, error in
-                XCTAssertNil(error)
-                XCTAssertNotNil(result)
-                XCTAssertEqual(result?.success, 1)
-                expectedObject.fulfill()
+        networkManager.fetchData(from: endpoint, model: EventsModel.self) { result, error in
+            if let error = error {
+                XCTFail("Failed with error: \(error.localizedDescription)")
+            } else if let eventsModel = result {
+                let events = eventsModel.result
+                XCTAssertNotEqual(events.count, 0, "Expected to receive events but got an empty list.")
+                expectation.fulfill()
+            } else {
+                XCTFail("Expected valid data but got nil.")
             }
-
-            waitForExpectations(timeout: 5)
         }
+
+        waitForExpectations(timeout: 5)
+    }
+
+    // Test decoding failure scenario
+    func testNetworkServiceDecodeFail() {
+        let expectation = self.expectation(description: "Test Network Service Decode Fail")
+        let endpoint = SportsAPI.getAllLeagues(sportsName: "football")
+
+        networkManager.fetchData(from: endpoint, model: EventsModel.self) { result, error in
+            if let _ = result {
+                XCTFail("Expected decoding failure but got valid data.")
+            } else if let error = error {
+                print("Decoding failed as expected with error: \(error.localizedDescription)")
+                expectation.fulfill()
+            } else {
+                XCTFail("Expected error but got nil.")
+            }
+        }
+
+        waitForExpectations(timeout: 5)
     }
 }
