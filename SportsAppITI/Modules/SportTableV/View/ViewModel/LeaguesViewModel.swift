@@ -49,6 +49,13 @@ class LeaguesViewModel {
         }
     }
 
+    func handleItemSelection(at indexPath: IndexPath, completion: @escaping (Bool, LeagueModel) -> Void) {
+        let selectedItem = footballLeagues[indexPath.row]
+        ConnectivityService.shared.checkInternetConnection { isConnected in
+            completion(isConnected, selectedItem)
+        }
+    }
+
     // MARK: - Manage Leagues
     func deleteLeague(at indexPath: IndexPath) {
         let leagueToDelete = footballLeagues[indexPath.row]

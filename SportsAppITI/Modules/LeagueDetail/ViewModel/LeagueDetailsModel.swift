@@ -2,15 +2,13 @@
 //  LeagueDetailsModel.swift
 //  SportsAppITI
 //
-//  Created by Engy on 8/19/24.
-//imgName: "football"
+//  Created by Mahmoud on 8/19/24.
 
 import Foundation
 class LeagueDetailsModel {
     let staticArray = [
         EventModel(homeTeamLogo: "football", eventHomeTeam: "football", awayTeamLogo: "football", eventAwayTeam: "football", leagueLogo: "football", eventFinalResult: "football", eventDate: "football", eventTime: "football", homeTeamKey: 10, awayTeamKey: 19),
         EventModel(homeTeamLogo: "football", eventHomeTeam: "football", awayTeamLogo: "football", eventAwayTeam: "football", leagueLogo: "football", eventFinalResult: "football", eventDate: "football", eventTime: "football", homeTeamKey: 10, awayTeamKey: 19),
-        
 
     ]
 
